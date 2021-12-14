@@ -173,4 +173,4 @@ const main = async (network: Network, contracts: ContractGroup, nodeUrl: string,
 
 // Run on mainnet and testnet.
 main(Network.Mainnet, CONTRACTS.MAIN, 'https://rpc.tzbeta.net', 383)
-main(Network.Granada, CONTRACTS.TEST, 'https://rpctest.tzbeta.net', 159183)
+main(Network.Granada, CONTRACTS.TEST, 'https://granadanet.api.tez.ie', 159183)
