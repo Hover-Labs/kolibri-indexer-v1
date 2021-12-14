@@ -2,7 +2,7 @@
 
 import {HarbingerClient, Network, OvenClient, StableCoinClient} from "@hover-labs/kolibri-js"
 import axios from 'axios'
-import {Oven, OvenLocator} from './types/oven-data'
+import {Oven, OvenLocator, SerializableOven} from './types/oven-data'
 import {putBucket} from "./s3-bucket-util"
 import S3Client from './types/s3-client'
 import BigNumber from 'bignumber.js'
@@ -146,4 +146,23 @@ export const borrowedkUSDFromOvensInList = (ovenList: Array<Oven>): BigNumber =>
     return ovenList.reduce((accumulated: BigNumber, oven: Oven) => {
         return oven.outstandingTokens.plus(accumulated)
     }, new BigNumber(0))
+}
+
+/**
+ * Create safe serializable versions of oven data
+ */
+export const toSerializableOvenData = (ovenList: Array<Oven>): Array<SerializableOven> => {
+    return ovenList.map((oven: Oven) => {
+        return {
+            ovenAddress: oven.ovenAddress,
+            ovenOwner: oven.ovenOwner,
+
+            baker: oven.baker,
+            balance: oven.balance.toFixed(),
+            borrowedTokens: oven.borrowedTokens.toFixed(),
+            stabilityFees: oven.stabilityFees.toFixed(),
+            isLiquidated: oven.isLiquidated,
+            outstandingTokens: oven.outstandingTokens.toFixed()
+        }
+    })
 }

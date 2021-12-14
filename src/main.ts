@@ -2,7 +2,13 @@
 require('dotenv').config()
 import { CONTRACTS, ContractGroup, Network } from "@hover-labs/kolibri-js"
 import { initialize, isTestMode } from "./helpers"
-import { getAllOvenData, putOvenLocatorsIntoBucket, xtzValueOfOvensInList, borrowedkUSDFromOvensInList } from "./oven-helpers"
+import {
+    getAllOvenData,
+    putOvenLocatorsIntoBucket,
+    xtzValueOfOvensInList,
+    borrowedkUSDFromOvensInList,
+    toSerializableOvenData
+} from "./oven-helpers"
 import * as Sentry from "@sentry/node"
 import { fixedToDecimal, getHumanReadableXTZPrice } from "./price-helpers"
 import PegData from './types/peg-data'
@@ -136,11 +142,13 @@ const main = async (network: Network, contracts: ContractGroup, nodeUrl: string,
         const tvlUSD = totalOvenBalanceUSD.plus(liquidityPoolBalance).plus(totalFarmBalanceUSD)
         metricsClient.gauge('tvl', tvlUSD, [`network:${network}`])
 
+        const serializableOvenData = toSerializableOvenData(ovenList)
+
         // Place data in buckets
         await putBucket(
             s3Client,
             {
-                allOvenData: ovenList,
+                allOvenData: serializableOvenData,
                 apy,
                 totalBalance: totalOvenBalanceXTZ,
                 totalBalanceUSD: totalOvenBalanceUSD,
@@ -148,7 +156,7 @@ const main = async (network: Network, contracts: ContractGroup, nodeUrl: string,
             },
             `${network}/all-data.json`
         )
-        await putBucket(s3Client, { allOvenData: ovenList }, `${network}/oven-data.json`)
+        await putBucket(s3Client, { allOvenData: serializableOvenData }, `${network}/oven-data.json`)
         await putBucket(s3Client, { apy }, `${network}/apy.json`)
         await putBucket(s3Client, {
             totalBalance: totalOvenBalanceXTZ,
