@@ -159,10 +159,10 @@ export const toSerializableOvenData = (ovenList: Array<Oven>): Array<Serializabl
 
             baker: oven.baker,
             balance: oven.balance.toFixed(),
-            borrowedTokens: oven.borrowedTokens.toFixed(18),
-            stabilityFees: oven.stabilityFees.toFixed(18),
+            borrowedTokens: oven.borrowedTokens.toFixed(),
+            stabilityFees: oven.stabilityFees.toFixed(),
             isLiquidated: oven.isLiquidated,
-            outstandingTokens: oven.outstandingTokens.toFixed(18)
+            outstandingTokens: oven.outstandingTokens.toFixed()
         }
     })
 }
