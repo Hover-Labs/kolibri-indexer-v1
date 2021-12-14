@@ -20,5 +20,20 @@ export type OvenData = {
     outstandingTokens: BigNumber
 }
 
+/**
+ * The data about the oven.
+ */
+export type SerializableOvenData = {
+    baker: string | null,
+    balance: string,
+    borrowedTokens: string,
+    stabilityFees: string,
+    isLiquidated: boolean
+    outstandingTokens: string
+}
+
 /** And oven is the union of both a locator and the data. */
 export type Oven = OvenLocator & OvenData
+
+/** And oven is the union of both a locator and the data. */
+export type SerializableOven = OvenLocator & SerializableOvenData
