@@ -85,7 +85,9 @@ const main = async (network: Network, contracts: ContractGroup, nodeUrl: string,
         logPegData(await getPlentyPegStats(contracts, network, harbingerClient, toolkit), metricsClient)
 
         // Process and dump ovens
+        console.log(`[${network}] Getting all oven data...`)
         const ovenList = await getAllOvenData(network, ovenRegistryBigMapID, stableCoinClient, harbingerClient, nodeUrl)
+        console.log(`[${network}] Done fetching oven data!`)
         await putOvenLocatorsIntoBucket(s3Client, ovenList, network)
         metricsClient.gauge('oven.count', ovenList.length, [`network:${network}`]);
 

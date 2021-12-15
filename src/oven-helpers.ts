@@ -83,11 +83,28 @@ export const getAllOvenData = async (
         offset += pageSize
     }
 
+    return await promiseAllInBatches(ovenLocators, 100, nodeUrl, stableCoinClient, harbingerClient)
+
     // Load data for all locators
-    const ovenPromises: Array<Promise<Oven>> = ovenLocators.map((ovenLocator: OvenLocator) => {
-        return ovenFromLocator(ovenLocator, nodeUrl, stableCoinClient, harbingerClient)
-    })
-    return Promise.all(ovenPromises)
+    // const ovenPromises: Array<Promise<Oven>> = ovenLocators.map((ovenLocator: OvenLocator) => {
+    //     return ovenFromLocator(ovenLocator, nodeUrl, stableCoinClient, harbingerClient)
+    // })
+    // return Promise.all(ovenPromises)
+}
+
+const promiseAllInBatches = async (items: OvenLocator[], batchSize: number, nodeUrl: string, stableCoinClient: StableCoinClient, harbingerClient: HarbingerClient) => {
+    let position = 0;
+    let results: Oven[] = [];
+    while (position < items.length) {
+        const itemsForBatch = items.slice(position, position + batchSize);
+        console.log(`[${position}/${items.length}] Batching...`)
+        results = [
+            ...results,
+            ...await Promise.all(itemsForBatch.map(item => ovenFromLocator(item, nodeUrl, stableCoinClient, harbingerClient)))
+        ];
+        position += batchSize;
+    }
+    return results;
 }
 
 /**
