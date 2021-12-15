@@ -98,9 +98,19 @@ const promiseAllInBatches = async (items: OvenLocator[], batchSize: number, node
     while (position < items.length) {
         const itemsForBatch = items.slice(position, position + batchSize);
         console.log(`[${position}/${items.length}] Batching...`)
+        let newResults
+        while (true){
+            try {
+                newResults = await Promise.all(itemsForBatch.map(item => ovenFromLocator(item, nodeUrl, stableCoinClient, harbingerClient)))
+                break
+            } catch (e) {
+                console.log("Failed...waiting 5s and trying again.", e)
+                await new Promise(r => setTimeout(r, 5000)); // Wait 5s and try again
+            }
+        }
         results = [
             ...results,
-            ...await Promise.all(itemsForBatch.map(item => ovenFromLocator(item, nodeUrl, stableCoinClient, harbingerClient)))
+            ...newResults
         ];
         position += batchSize;
     }
