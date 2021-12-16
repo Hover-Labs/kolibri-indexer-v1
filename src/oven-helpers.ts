@@ -83,11 +83,38 @@ export const getAllOvenData = async (
         offset += pageSize
     }
 
+    return await promiseAllInBatches(ovenLocators, 100, nodeUrl, stableCoinClient, harbingerClient)
+
     // Load data for all locators
-    const ovenPromises: Array<Promise<Oven>> = ovenLocators.map((ovenLocator: OvenLocator) => {
-        return ovenFromLocator(ovenLocator, nodeUrl, stableCoinClient, harbingerClient)
-    })
-    return Promise.all(ovenPromises)
+    // const ovenPromises: Array<Promise<Oven>> = ovenLocators.map((ovenLocator: OvenLocator) => {
+    //     return ovenFromLocator(ovenLocator, nodeUrl, stableCoinClient, harbingerClient)
+    // })
+    // return Promise.all(ovenPromises)
+}
+
+const promiseAllInBatches = async (items: OvenLocator[], batchSize: number, nodeUrl: string, stableCoinClient: StableCoinClient, harbingerClient: HarbingerClient) => {
+    let position = 0;
+    let results: Oven[] = [];
+    while (position < items.length) {
+        const itemsForBatch = items.slice(position, position + batchSize);
+        console.log(`[${position}/${items.length}] Batching...`)
+        let newResults
+        while (true){
+            try {
+                newResults = await Promise.all(itemsForBatch.map(item => ovenFromLocator(item, nodeUrl, stableCoinClient, harbingerClient)))
+                break
+            } catch (e) {
+                console.log("Failed...waiting 5s and trying again.", e)
+                await new Promise(r => setTimeout(r, 5000)); // Wait 5s and try again
+            }
+        }
+        results = [
+            ...results,
+            ...newResults
+        ];
+        position += batchSize;
+    }
+    return results;
 }
 
 /**
@@ -109,12 +136,16 @@ const ovenFromLocator = async (ovenLocator: OvenLocator, nodeUrl: string, stable
         stableCoinClient,
         harbingerClient
     )
+
+    const ovenContract = await ovenClient['tezos'].contract.at(ovenLocator.ovenAddress)
+    const ovenStorage = await ovenContract.storage()
+
     const values = await Promise.all([
         ovenClient.getBaker(),
         ovenClient.getBalance(),
-        ovenClient.getBorrowedTokens(),
-        ovenClient.getStabilityFees(),
-        ovenClient.isLiquidated(),
+        ovenClient.getBorrowedTokens(ovenStorage),
+        ovenClient.getStabilityFees(new Date(), ovenStorage),
+        ovenClient.isLiquidated(ovenStorage),
     ])
 
     return {

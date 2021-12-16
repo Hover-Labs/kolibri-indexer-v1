@@ -6,7 +6,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@hover-labs/kolibri-js": "^3.0.8",
+    "@hover-labs/kolibri-js": "^3.1.0",
     "@sentry/node": "^5.29.2",
     "@sentry/tracing": "^5.29.2",
     "@taquito/signer": "^10.2.1",
