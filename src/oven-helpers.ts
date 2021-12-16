@@ -136,12 +136,16 @@ const ovenFromLocator = async (ovenLocator: OvenLocator, nodeUrl: string, stable
         stableCoinClient,
         harbingerClient
     )
+
+    const ovenContract = await ovenClient['tezos'].contract.at(ovenLocator.ovenAddress)
+    const ovenStorage = await ovenContract.storage()
+
     const values = await Promise.all([
         ovenClient.getBaker(),
         ovenClient.getBalance(),
-        ovenClient.getBorrowedTokens(),
-        ovenClient.getStabilityFees(),
-        ovenClient.isLiquidated(),
+        ovenClient.getBorrowedTokens(ovenStorage),
+        ovenClient.getStabilityFees(new Date(), ovenStorage),
+        ovenClient.isLiquidated(ovenStorage),
     ])
 
     return {
